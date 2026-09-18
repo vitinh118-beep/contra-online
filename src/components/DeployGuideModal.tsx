@@ -86,36 +86,42 @@ export const DeployGuideModal: React.FC<DeployGuideModalProps> = ({ isOpen, onCl
             </div>
           </div>
 
-          {/* Method 2: Deploy to Vercel / Netlify / GitHub Pages */}
+          {/* Method 2: Deploy to Render.com / Railway / Cloud Run (Hỗ trợ 100% Chơi 2 người WebSocket) */}
           <div className="bg-zinc-850 border border-zinc-700/80 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sky-400 font-arcade text-xs">
+            <div className="flex items-center gap-2 text-emerald-400 font-arcade text-xs">
               <Laptop className="w-4 h-4" />
-              <span>CÁCH 2: XUẤT CODE & DEPLOY LÊN VERCEL / NETLIFY / GITHUB PAGES</span>
+              <span>CÁCH 2: DEPLOY LÊN RENDER.COM HOẶC RAILWAY (CHƠI 2 NGƯỜI ONLINE ĐẦY ĐỦ)</span>
             </div>
 
-            <p className="text-zinc-300 leading-relaxed">
-              Nếu bạn muốn có tên miền riêng (ví dụ: <code className="text-amber-300">game-contra.vercel.app</code> hoặc tên miền .com của bạn):
+            <p className="text-zinc-300 leading-relaxed text-xs">
+              Vì game có tính năng <strong>chơi 2 người qua mạng thời gian thực (WebSockets)</strong>, bạn cần dịch vụ có máy chủ Node.js chạy liên tục:
             </p>
 
-            <ol className="list-decimal list-inside space-y-2 text-zinc-300 text-xs pl-1">
-              <li>
-                <strong className="text-white">Tải mã nguồn về máy:</strong> Vào menu biểu tượng góc phải màn hình AI Studio &rarr; chọn <strong>"Export to GitHub"</strong> hoặc <strong>"Download ZIP"</strong>.
-              </li>
-              <li>
-                <strong className="text-white">Đẩy lên GitHub:</strong> Tạo một repository mới trên GitHub và tải toàn bộ code lên.
-              </li>
-              <li>
-                <strong className="text-white">Kết nối Vercel hoặc Netlify:</strong>
-                <div className="bg-black/60 p-2.5 rounded mt-1 text-[11px] text-zinc-300 font-mono space-y-1">
-                  <div>- Đăng nhập <span className="text-amber-400">vercel.com</span> hoặc <span className="text-amber-400">netlify.com</span> (miễn phí 100%)</div>
-                  <div>- Chọn <strong>"Import Git Repository"</strong> vừa tạo</div>
-                  <div>- Framework Preset: <strong>Vite</strong></div>
-                  <div>- Build Command: <code className="text-emerald-400">npm run build</code></div>
-                  <div>- Output Directory: <code className="text-emerald-400">dist</code></div>
-                  <div>- Bấm <strong>Deploy</strong> &rarr; Sau 30 giây bạn sẽ có link vĩnh viễn!</div>
-                </div>
-              </li>
-            </ol>
+            <div className="bg-black/60 p-3 rounded-lg border border-zinc-800 space-y-2 text-xs">
+              <div className="text-amber-400 font-arcade text-[11px]">KHUYẾN NGHỊ: RENDER.COM (MIỄN PHÍ 100% & CỰC DỄ)</div>
+              <ol className="list-decimal list-inside space-y-1.5 text-zinc-300 pl-1 text-[11px]">
+                <li>Xuất mã nguồn: Bấm menu góc phải AI Studio &rarr; chọn <strong>Export to GitHub</strong>.</li>
+                <li>Đăng nhập <strong className="text-white">render.com</strong> &rarr; Chọn <strong>New +</strong> &rarr; <strong>Web Service</strong>.</li>
+                <li>Kết nối với kho GitHub vừa tạo.</li>
+                <li>Cấu hình:
+                  <div className="mt-1 ml-4 font-mono text-[10px] text-emerald-300 bg-zinc-950 p-2 rounded">
+                    <div>• Environment: <strong>Node</strong></div>
+                    <div>• Build Command: <code className="text-amber-300 font-bold">npm install && npm run build</code></div>
+                    <div>• Start Command: <code>npm start</code></div>
+                  </div>
+                </li>
+                <li>Bấm <strong>Create Web Service</strong> &rarr; Xong! Bạn sẽ có link HTTPS & WebSocket chơi 2 người vĩnh viễn.</li>
+              </ol>
+            </div>
+
+            <div className="p-2.5 bg-zinc-900 rounded border border-zinc-800 text-[11px] text-zinc-400">
+              ⚠️ <strong>Lưu ý về Vercel & GitHub Pages:</strong>
+              <div className="mt-1 text-zinc-400">
+                - <strong>GitHub Pages:</strong> Chỉ hỗ trợ web tĩnh (HTML/JS), không có máy chủ nên không chạy được tính năng chơi 2 người qua mạng.<br/>
+                - <strong>Vercel:</strong> Chạy theo mô hình Serverless không duy trì kết nối WebSocket liên tục.<br/>
+                &rarr; Do đó để trải nghiệm đầy đủ cả chơi 1 người và 2 người online, <strong>Render.com</strong> hoặc <strong>Cloud Run</strong> là lựa chọn tối ưu nhất!
+              </div>
+            </div>
           </div>
 
           {/* Device compatibility notice */}
