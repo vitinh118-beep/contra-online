@@ -490,10 +490,27 @@ export class ContraGameEngine {
         p.y = waterPlat.y + 4; // Authentic water line
       }
     } else if (p.state === 'swimming') {
-      // Stepped or jumped out of water boundaries
-      p.isGrounded = false;
-      p.state = 'jump';
-      p.isSubmerged = false;
+      // Exiting water boundaries: check if stepping directly onto an adjacent ground platform
+      let foundBank = false;
+      for (const plat of this.platforms) {
+        if (plat.type === 'water') continue;
+        if (plat.type === 'bridge' && plat.bridgeExploded) continue;
+        const isOverBank = p.x + p.width / 2 >= plat.x && p.x - p.width / 2 <= plat.x + plat.width;
+        if (isOverBank && Math.abs(p.y - plat.y) <= 32) {
+          p.y = plat.y;
+          p.vy = 0;
+          p.isGrounded = true;
+          p.state = (input.left || input.right || p.vx !== 0) ? 'run' : 'idle';
+          p.isSubmerged = false;
+          foundBank = true;
+          break;
+        }
+      }
+      if (!foundBank) {
+        p.isGrounded = false;
+        p.state = 'jump';
+        p.isSubmerged = false;
+      }
     }
 
     const inWater = p.state === 'swimming';
@@ -557,7 +574,7 @@ export class ContraGameEngine {
     if (justPressedJump) {
       if (inWater) {
         // Jump out of water!
-        p.vy = -7.4;
+        p.vy = -7.6;
         p.isGrounded = false;
         p.state = 'jump';
         p.isSubmerged = false;
@@ -592,43 +609,39 @@ export class ContraGameEngine {
     const minX = this.cameraX + 8;
     if (p.x < minX) p.x = minX;
 
-    // Stepping from water onto riverbank
-    if (p.state === 'swimming' && p.vx !== 0) {
-      for (const plat of this.platforms) {
-        if (plat.type === 'water') continue;
-        if (plat.type === 'bridge' && plat.bridgeExploded) continue;
+    // Stepping from water onto riverbank (runs when swimming, jumping out of water, or approaching bank)
+    for (const plat of this.platforms) {
+      if (plat.type === 'water') continue;
+      if (plat.type === 'bridge' && plat.bridgeExploded) continue;
 
-        // Is platform a ground bank adjacent to the water?
-        const isBankHeight = Math.abs(plat.y - (waterPlat ? waterPlat.y : 232)) <= 26;
-        if (!isBankHeight) continue;
+      // Check if platform is a bank within stepping height (water line is approx plat.y + 16)
+      const isBankHeight = p.y >= plat.y - 8 && p.y <= plat.y + 32;
+      if (!isBankHeight) continue;
 
-        // Swimming right onto bank
-        if (p.vx > 0 && p.x + p.width / 2 >= plat.x && p.x <= plat.x + 20) {
-          p.x = plat.x + p.width / 2 + 1;
-          p.y = plat.y;
-          p.vy = 0;
-          p.isGrounded = true;
-          p.state = 'run';
-          p.isSubmerged = false;
-          break;
-        }
-        // Swimming left onto bank
-        if (p.vx < 0 && p.x - p.width / 2 <= plat.x + plat.width && p.x >= plat.x + plat.width - 20) {
-          p.x = plat.x + plat.width - p.width / 2 - 1;
-          p.y = plat.y;
-          p.vy = 0;
-          p.isGrounded = true;
-          p.state = 'run';
-          p.isSubmerged = false;
-          break;
-        }
+      // Moving right onto bank
+      if ((p.vx > 0 || input.right) && p.x + p.width / 2 >= plat.x - 2 && p.x <= plat.x + 28) {
+        p.x = Math.max(p.x, plat.x + 4);
+        p.y = plat.y;
+        p.vy = 0;
+        p.isGrounded = true;
+        p.state = 'run';
+        p.isSubmerged = false;
+        break;
+      }
+      // Moving left onto bank
+      if ((p.vx < 0 || input.left) && p.x - p.width / 2 <= plat.x + plat.width + 2 && p.x >= plat.x + plat.width - 28) {
+        p.x = Math.min(p.x, plat.x + plat.width - 4);
+        p.y = plat.y;
+        p.vy = 0;
+        p.isGrounded = true;
+        p.state = 'run';
+        p.isSubmerged = false;
+        break;
       }
     }
 
-    // Platform Collisions (when airborne or landing)
-    if (p.state !== 'swimming') {
-      this.handlePlayerPlatformCollisions(p);
-    }
+    // Platform Collisions (when airborne, landing, or stepping onto land)
+    this.handlePlayerPlatformCollisions(p);
 
     // Pit fall check
     if (p.y > this.viewHeight + 40) {
@@ -652,13 +665,18 @@ export class ContraGameEngine {
   }
 
   private getWaterPlatform(p: Player): Platform | undefined {
+    // If player is already grounded on solid land, they are not in water
+    if (p.isGrounded && p.state !== 'swimming') {
+      return undefined;
+    }
+
     return this.platforms.find(
       plat =>
         plat.type === 'water' &&
-        p.x >= plat.x - 4 &&
-        p.x <= plat.x + plat.width + 4 &&
-        p.y >= plat.y - 16 &&
-        p.y <= plat.y + plat.height + 12
+        p.x >= plat.x &&
+        p.x <= plat.x + plat.width &&
+        p.y >= plat.y - 12 &&
+        p.y <= plat.y + plat.height + 14
     );
   }
 
@@ -681,13 +699,17 @@ export class ContraGameEngine {
       const isWithinX = p.x + p.width / 2 >= plat.x && p.x - p.width / 2 <= plat.x + plat.width;
       if (!isWithinX) continue;
 
-      // Normal landing from above
-      const normalLand = prevY <= plat.y + 6 && p.y >= plat.y && p.y <= plat.y + 14;
+      // Normal landing from above (falling onto platform)
+      const normalLand = prevY <= plat.y + 8 && p.y >= plat.y && p.y <= plat.y + 18;
 
-      // Step up / landing onto bank from water
-      const waterStepUp = p.state === 'swimming' && p.y >= plat.y && p.y <= plat.y + 26;
+      // Bank step-up: solid land or bridge should NEVER let a player clip below its surface
+      // (Bank height difference from water is 12-16px, so any y between plat.y - 4 and plat.y + 30 is on the bank)
+      const bankStepUp = (plat.type === 'solid' || plat.type === 'bridge') && p.y >= plat.y - 4 && p.y <= plat.y + 30;
 
-      if (normalLand || waterStepUp) {
+      // Step up / landing onto bank when swimming
+      const waterStepUp = p.state === 'swimming' && p.y >= plat.y - 2 && p.y <= plat.y + 32;
+
+      if (normalLand || bankStepUp || waterStepUp) {
         p.y = plat.y;
         p.vy = 0;
         p.isGrounded = true;
