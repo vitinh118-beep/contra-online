@@ -95,12 +95,17 @@ export default function App() {
       <header className="h-12 bg-zinc-900 border-b border-zinc-800 px-3 sm:px-6 flex items-center justify-between shrink-0 z-30">
         {/* Title & Brand */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center font-arcade text-xs font-black shadow-md shadow-red-600/50">
+          <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center font-pixel text-xs font-black shadow-md shadow-red-600/50 text-white">
             C
           </div>
-          <h1 className="font-arcade text-xs sm:text-sm text-red-500 tracking-wider">
-            CONTRA <span className="text-zinc-400 text-[10px] hidden sm:inline">VIỆT NAM & THẾ GIỚI</span>
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-arcade font-bold text-xs sm:text-sm text-red-500 tracking-wider">
+              CONTRA <span className="text-zinc-400 text-[10px] hidden sm:inline">ARCADE</span>
+            </h1>
+            <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-amber-300 font-arcade bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
+              <span>HẢI HOÀNG 0918001944</span>
+            </span>
+          </div>
         </div>
 
         {/* Quick Actions */}
@@ -277,6 +282,10 @@ export default function App() {
             <Share2 className="w-3 h-3" />
             <span>LẤY LINK GỬI BẠN BÈ</span>
           </button>
+          <span>•</span>
+          <div className="flex items-center gap-1 text-amber-400 font-bold">
+            <span>TÁC GIẢ: HẢI HOÀNG (0918001944)</span>
+          </div>
           <span>•</span>
           <div className="flex items-center gap-1 text-zinc-500">
             <Gamepad2 className="w-3.5 h-3.5" />

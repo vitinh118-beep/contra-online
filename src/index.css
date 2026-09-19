@@ -1,12 +1,25 @@
 @import "tailwindcss";
 
 @layer utilities {
+  /* Arcade / Tactical Gaming Font with 100% native Vietnamese support */
   .font-arcade {
-    font-family: 'Press Start 2P', monospace, cursive;
+    font-family: 'Chakra Petch', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.025em;
   }
-  .font-vt {
-    font-family: 'VT323', monospace;
+  /* Classic 8-bit pixel font reserved for ASCII branding & numbers */
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
   }
+  /* Clean professional Vietnamese typography */
+  .font-body {
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  }
+}
+
+body {
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* CRT Scanline & Phosphor Glow Overlay */

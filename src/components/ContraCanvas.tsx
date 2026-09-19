@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ContraGameEngine } from '../game/engine';
 import { GameMode, GameStatus, GameDifficulty } from '../types';
 import { audio } from '../game/audio';
-import { Play, Users, Sparkles, RefreshCw, Trophy, Gauge, ShieldAlert } from 'lucide-react';
+import { Play, Users, Sparkles, RefreshCw, Trophy, Gauge, ShieldAlert, Layers } from 'lucide-react';
 
 interface ContraCanvasProps {
   engine: ContraGameEngine;
@@ -25,6 +25,7 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
   const [menuSelection, setMenuSelection] = useState<GameMode>('1P');
   const [difficulty, setDifficulty] = useState<GameDifficulty>('normal');
   const [startWith30Lives, setStartWith30Lives] = useState<boolean>(false);
+  const [selectedStage, setSelectedStage] = useState<number>(0);
   const [dimensions, setDimensions] = useState({ width: 960, height: 540 });
 
   // Handle Container Responsive Sizing
@@ -276,13 +277,13 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
 
   // Start game handler
   const handleStartGame = useCallback(
-    (mode: GameMode, lives: number, diff: GameDifficulty = difficulty) => {
+    (mode: GameMode, lives: number, diff: GameDifficulty = difficulty, stageIdx: number = selectedStage) => {
       audio.enableAudio();
-      engine.start(mode, lives, diff, 0);
+      engine.start(mode, lives, diff, stageIdx);
       setCurrentStatus('playing');
       onStatusChange?.('playing');
     },
-    [engine, difficulty, onStatusChange]
+    [engine, difficulty, selectedStage, onStatusChange]
   );
 
   return (
@@ -308,27 +309,33 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
 
         {/* 1. TITLE SCREEN OVERLAY */}
         {currentStatus === 'title' && (
-          <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-6 text-white font-arcade z-20">
+          <div className="absolute inset-0 bg-black/88 flex flex-col items-center justify-center p-4 sm:p-6 text-white font-arcade z-20 overflow-y-auto">
             {/* Title Logo */}
-            <div className="text-center mb-6">
-              <div className="text-5xl sm:text-7xl font-black tracking-widest text-red-600 drop-shadow-[0_4px_16px_rgba(220,38,38,0.8)] animate-pulse">
+            <div className="text-center mb-4">
+              <div className="text-5xl sm:text-7xl font-black tracking-widest text-red-600 drop-shadow-[0_4px_24px_rgba(220,38,38,0.9)] animate-pulse font-pixel select-none">
                 CONTRA
               </div>
-              <div className="text-xs sm:text-sm tracking-[0.25em] text-yellow-400 mt-1">
-                ARCADE 1987 REMASTERED
+              <div className="text-xs sm:text-sm tracking-[0.25em] text-yellow-400 mt-1 font-arcade font-bold">
+                ARCADE 4 VÒNG CHIẾN ĐẤU REMASTERED
+              </div>
+              
+              {/* Author badge */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[11px] font-arcade tracking-wider">
+                <span className="text-amber-400">GIỚI THIỆU BỞI:</span>
+                <span className="font-bold text-amber-200">HẢI HOÀNG 0918001944</span>
               </div>
             </div>
 
             {/* Menu Options */}
-            <div className="w-full max-w-xs space-y-3 mb-6 text-xs">
+            <div className="w-full max-w-sm space-y-2.5 mb-5 text-xs font-arcade">
               {/* Player 1 / Player 2 */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setMenuSelection('1P')}
-                  className={`py-2 px-3 rounded border flex items-center justify-center gap-2 transition-colors ${
+                  className={`py-2 px-3 rounded-lg border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     menuSelection === '1P'
-                      ? 'bg-red-600/90 border-yellow-400 text-white shadow-lg'
+                      ? 'bg-red-600 border-yellow-400 text-white shadow-lg shadow-red-600/30 font-bold'
                       : 'bg-zinc-900/80 border-zinc-700 text-zinc-400 hover:text-white'
                   }`}
                 >
@@ -339,14 +346,14 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
                 <button
                   type="button"
                   onClick={() => setMenuSelection('2P')}
-                  className={`py-2 px-3 rounded border flex items-center justify-center gap-2 transition-colors ${
+                  className={`py-2 px-3 rounded-lg border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     menuSelection === '2P'
-                      ? 'bg-red-600/90 border-yellow-400 text-white shadow-lg'
+                      ? 'bg-red-600 border-yellow-400 text-white shadow-lg shadow-red-600/30 font-bold'
                       : 'bg-zinc-900/80 border-zinc-700 text-zinc-400 hover:text-white'
                   }`}
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>2 NGƯỜI (CÙNG PHÍM)</span>
+                  <span>2 NGƯỜI (CO-OP)</span>
                 </button>
               </div>
 
@@ -355,57 +362,100 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
                 <button
                   type="button"
                   onClick={onOpenMultiplayer}
-                  className="w-full py-2 px-3 rounded border border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 flex items-center justify-between transition-colors shadow-sm"
+                  className="w-full py-2 px-3 rounded-lg border border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 flex items-center justify-between transition-all shadow-sm cursor-pointer"
                 >
                   <div className="flex items-center gap-2 text-xs">
                     <Users className="w-3.5 h-3.5 text-red-400" />
-                    <span>CHƠI 2 NGƯỜI (LAN / ONLINE)</span>
+                    <span className="font-bold">CHƠI 2 NGƯỜI (LAN / ONLINE)</span>
                   </div>
-                  <span className="text-[10px] bg-red-700 text-white px-2 py-0.5 rounded font-arcade">
+                  <span className="text-[10px] bg-red-600 hover:bg-red-500 text-white font-bold px-2 py-0.5 rounded shadow-sm animate-pulse">
                     MỞ PHÒNG
                   </span>
                 </button>
               )}
 
+              {/* 4 Stage Selection */}
+              <div className="bg-zinc-900/80 border border-zinc-700/80 p-2.5 rounded-lg">
+                <div className="flex items-center justify-between text-[11px] text-sky-400 mb-1.5 font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>CHỌN VÒNG XUẤT PHÁT (4 VÒNG)</span>
+                  </div>
+                  <span className="text-amber-400 text-[10px]">
+                    VÒNG {selectedStage + 1}/4
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5 text-[10px]">
+                  {[
+                    { id: 0, title: 'VÒNG 1', desc: 'Đảo Rừng', boss: 'Pháo Đài Bức Tường Defense Wall' },
+                    { id: 1, title: 'VÒNG 2', desc: 'Thác Nước', boss: 'Robot Quái Vật Ngoại Tinh' },
+                    { id: 2, title: 'VÒNG 3', desc: 'Băng Tuyết', boss: 'Pháo Thủ Giga Cannon' },
+                    { id: 3, title: 'VÒNG 4', desc: 'Sào Huyệt', boss: 'Trùm Cuối Trái Tim Java Heart' },
+                  ].map((stg) => (
+                    <button
+                      key={stg.id}
+                      type="button"
+                      onClick={() => setSelectedStage(stg.id)}
+                      className={`py-1.5 px-1 rounded border text-center transition-all cursor-pointer ${
+                        selectedStage === stg.id
+                          ? 'bg-amber-600/30 border-amber-400 text-amber-300 font-bold shadow-md shadow-amber-500/20'
+                          : 'bg-zinc-800/60 border-zinc-700/60 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500'
+                      }`}
+                    >
+                      <div className="font-bold">{stg.title}</div>
+                      <div className="text-[9px] truncate opacity-90">{stg.desc}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-1.5 text-[10px] text-zinc-400 text-center truncate">
+                  Trùm: <span className="text-zinc-200">{[
+                    'Pháo Đài Bức Tường Defense Wall',
+                    'Robot Quái Vật Ngoại Tinh',
+                    'Pháo Thủ Giga Cannon',
+                    'Trùm Cuối Trái Tim Java Heart'
+                  ][selectedStage]}</span>
+                </div>
+              </div>
+
               {/* 30 Lives Toggle */}
               <button
                 type="button"
                 onClick={() => setStartWith30Lives(!startWith30Lives)}
-                className={`w-full py-2 px-3 rounded border flex items-center justify-between transition-colors ${
+                className={`w-full py-2 px-3 rounded-lg border flex items-center justify-between transition-all cursor-pointer ${
                   startWith30Lives
-                    ? 'bg-amber-950/80 border-yellow-500 text-yellow-400'
-                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-400'
+                    ? 'bg-amber-950/70 border-yellow-500 text-yellow-400'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-300'
                 }`}
               >
                 <div className="flex items-center gap-2 text-xs">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>MÃ KONAMI: 30 MẠNG</span>
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                  <span className="font-bold">MÃ KONAMI: 30 MẠNG</span>
                 </div>
                 <span className="text-[10px] font-bold">
-                  {startWith30Lives ? '[BẬT]' : '[TẮT - 3 MẠNG]'}
+                  {startWith30Lives ? '[ĐANG BẬT - 30 MẠNG]' : '[TẮT - 3/5 MẠNG]'}
                 </span>
               </button>
 
               {/* Difficulty Selection */}
-              <div className="bg-zinc-900/80 border border-zinc-700 p-2 rounded">
+              <div className="bg-zinc-900/80 border border-zinc-700 p-2 rounded-lg">
                 <div className="flex items-center justify-between text-[11px] text-zinc-300 mb-1.5 font-bold">
                   <div className="flex items-center gap-1.5">
                     <Gauge className="w-3.5 h-3.5 text-sky-400" />
-                    <span>ĐỘ KHÓ</span>
+                    <span>TỐC ĐỘ & ĐỘ KHÓ</span>
                   </div>
-                  <span className={`text-[10px] ${
+                  <span className={`text-[10px] font-bold ${
                     difficulty === 'easy' ? 'text-emerald-400' : difficulty === 'normal' ? 'text-yellow-400' : 'text-red-400'
                   }`}>
-                    {difficulty === 'easy' ? 'DỄ (5 MẠNG)' : difficulty === 'normal' ? 'CHUẨN (3 MẠNG)' : 'ARCADE PRO'}
+                    {difficulty === 'easy' ? 'DỄ (5 MẠNG)' : difficulty === 'normal' ? 'CHUẨN (3 MẠNG)' : 'KHÓ (ARCADE PRO)'}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 text-[10px]">
                   <button
                     type="button"
                     onClick={() => setDifficulty('easy')}
-                    className={`py-1 px-1 rounded border text-center transition-colors ${
+                    className={`py-1.5 px-1 rounded border text-center transition-all cursor-pointer ${
                       difficulty === 'easy'
-                        ? 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold'
+                        ? 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold shadow-sm'
                         : 'bg-zinc-800/60 border-zinc-700/60 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
@@ -414,9 +464,9 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
                   <button
                     type="button"
                     onClick={() => setDifficulty('normal')}
-                    className={`py-1 px-1 rounded border text-center transition-colors ${
+                    className={`py-1.5 px-1 rounded border text-center transition-all cursor-pointer ${
                       difficulty === 'normal'
-                        ? 'bg-yellow-950 border-yellow-500 text-yellow-300 font-bold'
+                        ? 'bg-yellow-950 border-yellow-500 text-yellow-300 font-bold shadow-sm'
                         : 'bg-zinc-800/60 border-zinc-700/60 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
@@ -425,9 +475,9 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
                   <button
                     type="button"
                     onClick={() => setDifficulty('hard')}
-                    className={`py-1 px-1 rounded border text-center transition-colors ${
+                    className={`py-1.5 px-1 rounded border text-center transition-all cursor-pointer ${
                       difficulty === 'hard'
-                        ? 'bg-red-950 border-red-500 text-red-300 font-bold'
+                        ? 'bg-red-950 border-red-500 text-red-300 font-bold shadow-sm'
                         : 'bg-zinc-800/60 border-zinc-700/60 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
@@ -441,8 +491,8 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
-                onClick={() => handleStartGame(menuSelection, startWith30Lives ? 30 : (difficulty === 'easy' ? 5 : 3), difficulty)}
-                className="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-xl shadow-red-600/40 active:scale-95 transition-transform flex items-center gap-2 text-sm"
+                onClick={() => handleStartGame(menuSelection, startWith30Lives ? 30 : (difficulty === 'easy' ? 5 : 3), difficulty, selectedStage)}
+                className="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-xl shadow-red-600/40 active:scale-95 transition-all flex items-center gap-2 text-sm cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-current" />
                 VÀO TRẬN (START GAME)
@@ -451,14 +501,14 @@ export const ContraCanvas: React.FC<ContraCanvasProps> = ({
               <button
                 type="button"
                 onClick={onOpenInstructions}
-                className="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs border border-zinc-700"
+                className="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs border border-zinc-700 cursor-pointer transition-colors"
               >
-                HƯỚNG DẪN & PHÍM BẤM
+                HƯỚNG DẪN & TÁC GIẢ
               </button>
             </div>
 
-            <div className="text-[10px] text-zinc-500 mt-6 tracking-wider">
-              © 1987 KONAMI / REMASTERED ARCADE WEB EDITION
+            <div className="text-[10px] text-zinc-400 mt-4 tracking-wider text-center">
+              CONTRA REMASTERED BY <span className="text-amber-400 font-bold">HẢI HOÀNG (0918001944)</span> • 4 VÒNG ĐẤU 4 TRÙM
             </div>
           </div>
         )}

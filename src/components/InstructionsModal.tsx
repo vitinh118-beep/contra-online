@@ -159,11 +159,14 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="mt-6 pt-3 border-t border-zinc-800 flex justify-end">
+        <div className="mt-6 pt-3 border-t border-zinc-800 flex items-center justify-between flex-wrap gap-2">
+          <div className="text-xs text-amber-400 font-arcade">
+            TÁC GIẢ & PHÁT TRIỂN: <strong className="text-white">HẢI HOÀNG (0918001944)</strong>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-red-600 hover:bg-red-500 font-arcade text-xs text-white rounded shadow"
+            className="px-5 py-2 bg-red-600 hover:bg-red-500 font-arcade text-xs text-white rounded shadow cursor-pointer"
           >
             ĐÃ HIỂU, VÀO TRẬN!
           </button>

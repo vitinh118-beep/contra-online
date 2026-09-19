@@ -50,7 +50,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           <div className="flex items-center gap-2.5">
             <div className="flex flex-col">
               <span className="text-sky-400 font-bold tracking-wider text-[11px]">1P BILL</span>
-              <span className="text-white text-base tracking-widest leading-tight">
+              <span className="text-white text-base tracking-widest leading-tight font-pixel">
                 {p1.score.toString().padStart(6, '0')}
               </span>
             </div>
@@ -86,7 +86,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         <div className="flex flex-col items-center justify-center">
           <div className="flex items-center gap-2">
             <span className="text-red-500 font-bold text-xs">HI</span>
-            <span className="text-yellow-400 tracking-widest text-base">
+            <span className="text-yellow-400 tracking-widest text-base font-pixel">
               {highScore.toString().padStart(6, '0')}
             </span>
           </div>
